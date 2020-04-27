@@ -135,8 +135,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean Save(String filename, String contents){
         File dir = new File(dirPath+"/testDir");
         dir.mkdir();
-        //File savefile = new File(dirPath+"/testDir/"+filename+".txt");
-        File savefile = new File(dirPath+"/testDir/"+filename+".xlsx");
+        File savefile = new File(dirPath+"/testDir/"+filename+".txt");
 
         try{
 
