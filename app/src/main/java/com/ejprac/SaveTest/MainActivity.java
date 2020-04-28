@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,9 +18,12 @@ import androidx.core.app.ActivityCompat;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -39,24 +43,35 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class MainActivity extends AppCompatActivity {
 
     EditText editName;
     EditText editBirth;
+    TextView tv_readjson;
+    Button savebtn, readbtn;
     String dirPath;
     String strName;
     String strBirth;
+
+    String readPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //Color color;
-        Button savebtn = (Button)this.findViewById(R.id.button);
+        savebtn = (Button)this.findViewById(R.id.button);
+        readbtn = (Button)this.findViewById(R.id.ReadBtn);
         editName = (EditText)this.findViewById(R.id.editText);
         editBirth = (EditText)this.findViewById(R.id.editText2);
+        tv_readjson = (TextView)this.findViewById(R.id.tv_json);
         setupPermission();
         savebtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,34 +83,34 @@ public class MainActivity extends AppCompatActivity {
                 @SuppressLint("SimpleDateFormat") SimpleDateFormat dateformat = new SimpleDateFormat("yyMMdd_HHmmss");
                 String filename = "test_"+dateformat.format(System.currentTimeMillis());
 
-                Log.d("directory", Environment.getExternalStorageDirectory().getAbsolutePath());
-                Log.d("directory", getFilesDir().getAbsolutePath());
+                Log.d("directory", Environment.getExternalStorageDirectory().getAbsolutePath()); // 결과: /storage/emulated/0
+//                Log.d("directory", getFilesDir().getAbsolutePath()); //결과: /data/user/0/com.ejprac.SaveTest/files
 //                Log.d("tag",Environment.DIRECTORY_DOCUMENTS);
                 Log.d("tag","function 1");
 
                 if(CheckWritable()){
                     Log.d("tag","Check Write success");
-                    //dirPath = Environment.DIRECTORY_DOWNLOADS+"/testDir";
-                    //dirPath = getFilesDir().getAbsolutePath();
-                    //dirPath =Environment.getDataDirectory().getAbsolutePath()+"/testdir";
-                    //dirPath = "/sdcard/Android/data/testDir";
-                    //dirPath = Environment.getDataDirectory().getAbsolutePath()+"/data/testDir";
-                    //dirPath = getFilesDir().getAbsolutePath()+"/testDir"; // 되지만 확인 불가
-                    //dirPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/testDir";
-                    //dirPath = Environment.DIRECTORY_DOWNLOADS+"/testDir";
-                    //dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
                     dirPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-                    File dir = new File(dirPath);
-                    if(Save(filename,"이름:"+strName+"\n생일:"+strBirth)){
-                        Log.d("tag","Save testing success ");
-                    }else{
-                        Log.d("tag","Save failed!!!!!!!-----");
-                    }
+                    //File dir = new File(dirPath);
+                    //txtSave(filename);
+                    //xlsSave(filename);
+                    //xlsxSave(filename);
+                    jsonSave(filename);
 
                 }
                 Log.d("tag","function end");
             }
         });
+
+        readbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("tag","read function start");
+                jsonRead();
+                Log.d("tag","read function end");
+            }
+        });
+
     }
 
     void ShowToast(String data){
@@ -132,16 +147,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean Save(String filename, String contents){
+    private void txtSave(String filename){
         File dir = new File(dirPath+"/testDir");
         dir.mkdir();
         File savefile = new File(dirPath+"/testDir/"+filename+".txt");
-
         try{
 
             /*usage 1*/
             BufferedWriter buf = new BufferedWriter(new FileWriter(savefile.getPath(),true));
-            buf.append(contents);
+            buf.append(strName+" ");
+            buf.append(strBirth);
             buf.newLine();
             buf.close();
 
@@ -151,10 +166,8 @@ public class MainActivity extends AppCompatActivity {
             fos.close();*/
 
             Log.d("tag","save file success!");
-            return true;
         }catch (IOException e){
             e.printStackTrace();
-            return false;
         }
     }
 
@@ -186,10 +199,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("tag","save file success!");
         }catch (IOException e){
             e.printStackTrace();
-
         }
-
-
     }
 
     private void xlsxSave(String filename){
@@ -220,10 +230,44 @@ public class MainActivity extends AppCompatActivity {
             Log.d("tag","save file success!");
         }catch (IOException e){
             e.printStackTrace();
+        }
+    }
 
+
+    private  void jsonSave(String filename){
+
+        File dir = new File(dirPath+"/testDir");
+        dir.mkdir();
+
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("name",strName);
+            obj.put("birth",strBirth);
+            FileWriter fw = new FileWriter(dirPath+"/testDir/"+filename+".json");
+            fw.write(obj.toString());
+            fw.flush();
+            fw.close();
+            readPath = dirPath+"/testDir/"+filename+".json";
+            Log.d("tag","save file success!");
+        } catch (JSONException | IOException e) {
+            e.printStackTrace();
+            Log.d("tag","save file failed---------");
         }
 
     }
 
+    private  void jsonRead(){
+        JsonParser parser = new JsonParser();
+
+        try{
+            JsonObject obj = (JsonObject)parser.parse(new FileReader(readPath));
+            tv_readjson.setText(obj.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
 }

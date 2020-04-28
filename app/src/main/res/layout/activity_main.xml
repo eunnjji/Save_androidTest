@@ -42,4 +42,24 @@
         android:layout_centerHorizontal="true"
         android:layout_above="@id/button"
         />
+
+    <TextView
+        android:id="@+id/tv_json"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="241dp"
+        android:text="Jsonfile read" />
+
+    <Button
+        android:id="@+id/ReadBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="162dp"
+        android:text="JsonRead" />
+
+
 </RelativeLayout>
