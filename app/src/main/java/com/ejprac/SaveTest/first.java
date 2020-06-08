@@ -35,6 +35,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 public class first extends Fragment {
@@ -101,6 +107,14 @@ public class first extends Fragment {
                 Log.d("tag","read function start");
                 jsonRead();
                 Log.d("tag","read function end");
+            }
+        });
+
+
+        connectbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ConnectServer();
             }
         });
 
@@ -240,8 +254,49 @@ public class first extends Fragment {
         }
     }
 
-    public void ConnectServer(View view){
+    public void ConnectServer(){
+        Log.d("tag","서버 연결해서 값 가져오기");
 
+
+        mainActivity.mMyControl.buildNetworkService(mainActivity.baseurl);
+        mainActivity.mNetworkService = mainActivity.mMyControl.getNetworkService();
+        Call<List<TestItem>> getCall = mainActivity.mNetworkService.get_test();
+        /*getCall.enqueue(new Callback<TestItem>() {
+            @Override
+            public void onResponse(Call<TestItem> call, Response<TestItem> response) {
+                if(response.isSuccessful()){
+                    //mainActivity.testItemList = response.body();
+                    mainActivity.ShowToast(response.body().getName()+" "+response.body().getBirth());
+                    Log.d("tag","가져오기 성공!");
+                }else{
+                    Log.d("tag","가져오기 실패!, 상태 코드:"+response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TestItem> call, Throwable t) {
+                Log.d("tag","실패!, 상태 코드: "+t.getMessage());
+            }
+        });*/
+        getCall.enqueue(new Callback<List<TestItem>>() {
+            @Override
+            public void onResponse(Call<List<TestItem>> call, Response<List<TestItem>> response) {
+                if(response.isSuccessful()){
+                    mainActivity.testItemList = response.body();
+                    mainActivity.ShowToast(Integer.toString(response.body().size()));
+                    Log.d("tag","가져오기 성공!");
+                }else{
+                    Log.d("tag","가져오기 실패!, 상태 코드:"+response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<TestItem>> call, Throwable t) {
+                Log.d("tag","실패!, 상태 코드: "+t.getMessage());
+            }
+        });
+
+        Log.d("tag","함수 끝!");
     }
 
 

@@ -23,6 +23,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -47,6 +48,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -56,6 +58,12 @@ public class MainActivity extends AppCompatActivity {
     second secondFragement;
 
     int change;
+
+    public List<TestItem> testItemList;
+    String baseurl = "";
+
+    AppController mMyControl = new AppController();
+    NetworkService mNetworkService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,9 +114,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
-
-
 
 
 
